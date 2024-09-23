@@ -18,8 +18,8 @@ csv_headers = ["Thread Title", "Post Number", "Post Date", "Post Content"]
 
 def scraper_one(lock):
     # Path to ChromeDriver and Chrome binary
-    chrome_driver_path = '/workspaces/News_forum_analysis/downloads/chromedriver-linux64/chromedriver'
-    chrome_binary_path = '/workspaces/News_forum_analysis/downloads/chrome-linux64/chrome'
+    chrome_driver_path = "C:/Users/Fabian/Documents/GitHub/chromedriver-win64/chromedriver.exe"
+    chrome_binary_path = "C:/Users/Fabian/Documents/GitHub/chrome-win64/chrome.exe"
 
     # Check if paths exist
     if not os.path.exists(chrome_driver_path):
@@ -82,7 +82,7 @@ def scraper_one(lock):
 
         # Loop through each thread and scrape posts
         for thread_index, thread_url in enumerate(thread_links, start=1):
-            print(f"\nScraping thread {thread_index}/{len(thread_links)}: {thread_url}")
+            print(f"/nScraping thread {thread_index}/{len(thread_links)}: {thread_url}")
             driver.get(thread_url)
 
             # Wait for the thread page to load and extract the thread title
@@ -119,7 +119,7 @@ def scraper_one(lock):
             for index, post in enumerate(posts, start=1):
                 # Extract post date and content
                 post_date = post.find("span", class_="bn_thread-comment__date").get_text(strip=True)
-                message = post.find("div", class_="bn_thread-comment__body").get_text(separator='\n', strip=True)
+                message = post.find("div", class_="bn_thread-comment__body").get_text(separator='/n', strip=True)
 
                 with lock:
                     with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
@@ -199,7 +199,7 @@ def scraper_one(lock):
 
         # Loop through each thread and scrape posts for "Gårdagens trådar"
         for thread_index, thread_url in enumerate(thread_links, start=1):
-            print(f"\nScraping thread {thread_index}/{len(thread_links)}: {thread_url}")
+            print(f"/nScraping thread {thread_index}/{len(thread_links)}: {thread_url}")
             driver.get(thread_url)
 
             # Wait for the thread page to load and extract the thread title
@@ -236,7 +236,7 @@ def scraper_one(lock):
             for index, post in enumerate(posts, start=1):
                 # Extract post date and content
                 post_date = post.find("span", class_="bn_thread-comment__date").get_text(strip=True)
-                message = post.find("div", class_="bn_thread-comment__body").get_text(separator='\n', strip=True)
+                message = post.find("div", class_="bn_thread-comment__body").get_text(separator='/n', strip=True)
 
                 with lock:
                     with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:

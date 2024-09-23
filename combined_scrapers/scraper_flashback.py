@@ -18,8 +18,8 @@ csv_headers = ["Thread Title", "Post Number", "Post Date", "Post Content"]
 
 def scraper_two(lock):
     # Path to ChromeDriver and Chrome binary
-    chrome_driver_path = '/workspaces/News_forum_analysis/downloads/chromedriver-linux64/chromedriver'
-    chrome_binary_path = '/workspaces/News_forum_analysis/downloads/chrome-linux64/chrome'
+    chrome_driver_path = "C:/Users/Fabian/Documents/GitHub/chromedriver-win64/chromedriver.exe"
+    chrome_binary_path = "C:/Users/Fabian/Documents/GitHub/chrome-win64/chrome.exe"
 
     # Check if paths exist
     if not os.path.exists(chrome_driver_path):
