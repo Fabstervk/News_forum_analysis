@@ -8,13 +8,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 from bs4 import BeautifulSoup
 import multiprocessing
 
 # Global variables for CSV file handling
 csv_filename = "combined_output.csv"
-csv_headers = ["Thread Title", "Post Number", "Post Date", "Post Content"]
+csv_headers = ["Index", "Thread Title", "Post Date", "Post Content", "Static URL"]
 
 def scraper_one(lock):
     # Path to ChromeDriver and Chrome binary
@@ -96,7 +96,7 @@ def scraper_one(lock):
                 print(f"Timeout while waiting for the thread page to load: {thread_url}. Skipping this thread.")
                 continue  # Skip to the next thread if there's a timeout
 
-            # Wait for the posts to load
+                        # Wait for the posts to load
             try:
                 WebDriverWait(driver, 15).until(
                     EC.presence_of_element_located((By.CLASS_NAME, "bn_thread-comment__container"))
@@ -117,15 +117,25 @@ def scraper_one(lock):
 
             # Write each post to the CSV file
             for index, post in enumerate(posts, start=1):
-                # Extract post date and content
-                post_date = post.find("span", class_="bn_thread-comment__date").get_text(strip=True)
-                message = post.find("div", class_="bn_thread-comment__body").get_text(separator='\n', strip=True)
+                try:  # Start of the adjusted bit
+                    # Extract post date and content
+                    post_date = post.find("span", class_="bn_thread-comment__date").get_text(strip=True)
+                    message = post.find("div", class_="bn_thread-comment__body").get_text(separator='\n', strip=True)
+                    static_url = "https://borssnack.di.se/#/"
 
-                with lock:
-                    with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
-                        csv_writer = csv.writer(csvfile)
-                        csv_writer.writerow([thread_title, index, post_date, message])  # Each post has its own row
-                print(f"Written Post {index} of thread {thread_url} to CSV.")
+                    with lock:
+                        with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
+                            csv_writer = csv.writer(csvfile)
+                            csv_writer.writerow([index, thread_title, post_date, message, static_url])  # Each post has its own row
+                            
+                    print(f"Written Post {index} of thread {thread_url} to CSV.")
+                    
+                except StaleElementReferenceException:  # Handling stale references
+                    print("StaleElementReferenceException encountered while processing posts. Retrying...")
+                    # Optionally, you can add a sleep here to wait before retrying
+                    time.sleep(1)
+                    continue  # Skip to the next iteration to retry this post
+                # End of the adjusted bit
 
             # Pause between requests to avoid overwhelming the server
             time.sleep(1)  # 1 second pause
@@ -236,12 +246,13 @@ def scraper_one(lock):
             for index, post in enumerate(posts, start=1):
                 # Extract post date and content
                 post_date = post.find("span", class_="bn_thread-comment__date").get_text(strip=True)
-                message = post.find("div", class_="bn_thread-comment__body").get_text(separator='\n', strip=True)
+                post_content = post.find("div", class_="bn_thread-comment__body").get_text(separator='\n', strip=True)
+                static_url = "https://borssnack.di.se/#/"
 
                 with lock:
                     with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                         csv_writer = csv.writer(csvfile)
-                        csv_writer.writerow([thread_title, index, post_date, message])  # Each post has its own row
+                        csv_writer.writerow([index, thread_title, post_date, post_content, static_url])  # Each post has its own row
                 print(f"Written Post {index} of thread {thread_url} to CSV.")
 
             # Pause between requests to avoid overwhelming the server
@@ -257,6 +268,6 @@ if __name__ == '__main__':
     lock = multiprocessing.Lock()
 
     # Start the scraper process
-    p = multiprocessing.Process(target=scraper_three, args=(lock,))
+    p = multiprocessing.Process(target=scraper_one, args=(lock,))
     p.start()
     p.join()  # Wait for the scraper to finish

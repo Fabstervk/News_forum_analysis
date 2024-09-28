@@ -5,12 +5,17 @@ from scraper_borssnack import scraper_one
 from scraper_flashback import scraper_two
 from scraper_placera import scraper_three
 
+from Translation import translate_posts
+
+from Text_sentimentanalysis_vader import Vaderanalysis
+
 if __name__ == '__main__':
     lock = multiprocessing.Lock()
+
     
     # Create the CSV file and write headers if it doesn't exist
     csv_filename = "combined_output.csv"
-    csv_headers = ["Thread Title", "Post Date", "Post Content"]
+    csv_headers = ["Index", "Thread Title", "Post Date", "Post Content", "Static URL"]
 
     if not os.path.exists(csv_filename):
         with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
@@ -32,3 +37,11 @@ if __name__ == '__main__':
         p.join()
 
     print("All scrapers have finished.")
+
+    translate_posts ()
+
+    print("Translation completed.")  # Indicate the end of translation
+
+    Vaderanalysis ()
+
+    print("Vader completed")

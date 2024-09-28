@@ -12,7 +12,7 @@ from selenium.common.exceptions import TimeoutException, StaleElementReferenceEx
 
 # Global variables for CSV file handling
 csv_filename = "combined_output.csv"
-csv_headers = ["Thread Title", "Post number", "Post Date", "Post Content"]
+csv_headers = ["Index", "Thread Title", "Post Date", "Post Content", "Static URL"]
 
 def scroll_to_load_all_threads(driver):
     last_height = driver.execute_script("return document.body.scrollHeight")
@@ -96,13 +96,16 @@ def scraper_three(lock):
                 post_elements = driver.find_elements(By.CLASS_NAME, "post-body")
                 date_elements = driver.find_elements(By.CLASS_NAME, "text-regular-m")
 
-                for post, date in zip(post_elements, date_elements):
+                for index, (post, date) in enumerate(zip(post_elements, date_elements), start=1):
                     post_content = post.text.strip()
                     post_date = date.text.strip()
+                    static_url = "https://forum.placera.se/upptack/populart"
+
+
                     with lock:  # Ensure thread safety when writing to CSV
                         with open(csv_filename, mode='a', newline='', encoding='utf-8') as csvfile:
                             csv_writer = csv.writer(csvfile)
-                            csv_writer.writerow([thread_title, post_date, post_content])  # Write to CSV
+                            csv_writer.writerow([index, thread_title, post_date, post_content, static_url])  # Write to CSV
                             print(f"Written Post of thread {thread_title} to CSV.")
 
                 # Go back to the forum page

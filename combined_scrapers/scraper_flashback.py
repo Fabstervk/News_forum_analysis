@@ -14,7 +14,7 @@ import multiprocessing
 
 # Global variables for CSV file handling
 csv_filename = "combined_output.csv"
-csv_headers = ["Thread Title", "Post Number", "Post Date", "Post Content"]
+csv_headers = ["Index", "Thread Title", "Post Date", "Post Content", "Static URL"]
 
 def scraper_two(lock):
     # Path to ChromeDriver and Chrome binary
@@ -149,12 +149,14 @@ def scraper_two(lock):
 
             # Write each post to the CSV file
             for index, (post, date) in enumerate(zip(posts, post_dates), start=1):
-                message = post.get_text(separator='\n', strip=True)
+                post_content = post.get_text(separator='\n', strip=True)
                 post_date = date.get_text(strip=True)  # Extract date
+                static_url = "https://www.flashback.org/f487"
+
                 with lock:  # Ensure thread safety when writing to CSV
                     with open("combined_output.csv", mode='a', newline='', encoding='utf-8') as csvfile:
                         csv_writer = csv.writer(csvfile)
-                        csv_writer.writerow([thread_title, index, post_date, message])  # Each post has its own row
+                        csv_writer.writerow([index, thread_title, post_date, post_content, static_url])  # Each post has its own row
                 print(f"Written Post {index} of thread {thread_url} to CSV.")
 
             # Pause between requests to avoid overwhelming the server
